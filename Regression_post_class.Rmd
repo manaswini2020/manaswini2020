@@ -1,0 +1,449 @@
+---
+title: "804_S2_lm"
+author: "Zahra Sajedinia"
+date: "2023-01-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+1- learning about the data set Real_estate.csv
+
+```{r}
+df = read.csv("/Users/zsajedin/Desktop/OneDrive/Winter 2023/OPS 804/Datasets/regression/Real_estate.csv")
+head(df)
+str(df)
+summary(df)
+```
+2- Creating a linear regression model and checking the assumptions
+
+```{r}
+lm_model = lm (Y.house.price.of.unit.area ~   X2.house.age  , data=df)
+summary(lm_model)
+plot(lm_model)
+
+```
+
+
+3- plotting the regression line
+
+```{r}
+# text on the graph
+a = round(unname(coef(lm_model)[1]), digits = 2) #intercept
+b = round(unname(coef(lm_model)[2]), digits = 2) #slope
+r2 = round(summary(lm_model)$r.squared, digits = 3)
+#-----------
+#scatterplot 
+library("ggplot2")
+ggplot(data = df, aes(x = X2.house.age, y = Y.house.price.of.unit.area)) +
+geom_point() +
+geom_smooth(method = "lm") +
+xlab("house age") +
+ylab("house price of unit area") +
+ggtitle( paste("y =", a, "+ " ,b ,"x ,", "r^2=",r2))
+```
+4- predicting a y value for a new x
+```{r}
+p <-data.frame(X2.house.age = c(25,12,100))
+
+predict.lm(lm_model,newdata = p)
+
+```
+
+5- Removing outlines based on Cook distance
+
+```{r}
+
+cooksd <- cooks.distance(lm_model)
+
+#outliers
+sample_size = nrow(df)
+influential <- as.numeric(names(cooksd)[(cooksd > (4/sample_size))])
+df_rm_outliers <- df[-influential, ] #removing outliers and save the new data set in df_rm_outliers
+
+
+#visualizing outliers plot based on the Cook-distance and the 4/n criterion
+plot(cooksd, pch="*", cex=2, main="Influential obs by Cooks distance")  
+abline(h = 4/sample_size, col="red")  # add cutoff line
+text(x=1:length(cooksd), y=cooksd, labels=ifelse(cooksd>4/sample_size, names(cooksd),""), col="red")  # add labels
+
+
+```
+Run the linear model again using the new data set with removed outliers
+
+```{r}
+lm_model = lm (Y.house.price.of.unit.area ~   X2.house.age  , data=df_rm_outliers)
+summary(lm_model)
+plot(lm_model)
+```
+We can add new variables to the model
+```{r}
+#adding new variables to the model
+
+
+lm_model_add_var = lm ( Y.house.price.of.unit.area ~   X2.house.age + X4.number.of.convenience.stores  , data=df_rm_outliers)
+summary(lm_model_add_var)
+plot(lm_model_add_var)
+
+
+```
+
+Transforming the y variable by using 3 different transformation
+Since this model's qqplot is close to a straight line we do not need this chunk, but you can use it as an example for fixing models with a non normal qqplot.
+```{r}
+#x^2 transformation:
+lm_model = lm ( I(Y.house.price.of.unit.area^2) ~   X2.house.age  , data=df_rm_outliers)
+summary(lm_model)
+plot(lm_model)
+
+
+#e^x transformation
+lm_model = lm ( exp(Y.house.price.of.unit.area) ~   X2.house.age  , data=df_rm_outliers)
+summary(lm_model)
+plot(lm_model)
+
+
+#log transformation
+lm_model = lm ( log(Y.house.price.of.unit.area) ~   X2.house.age  , data=df_rm_outliers)
+summary(lm_model)
+plot(lm_model)
+```
+
+
+Using a polynomial regression
+We do not need to make a polynomial regression in this case, but you can use the following as a sample for other models:
+```{r}
+
+lm_model_tr = lm ( Y.house.price.of.unit.area ~  I(X2.house.age^2)   , data=df_rm_outliers)
+summary(lm_model_tr)
+plot(lm_model_tr)
+
+
+
+lm_model_tr = lm ( Y.house.price.of.unit.area ~   X2.house.age + I(X2.house.age^2)   , data=df_rm_outliers)
+summary(lm_model_tr)
+plot(lm_model_tr)
+
+
+
+lm_model_tr = lm ( Y.house.price.of.unit.area ~   X2.house.age + I(X2.house.age^2) + I(X2.house.age^3) , data=df_rm_outliers)
+summary(lm_model_tr)
+plot(lm_model_tr)
+
+
+lm_model_tr = lm ( Y.house.price.of.unit.area ~  I(X2.house.age^3) , data=df_rm_outliers)
+summary(lm_model_tr)
+plot(lm_model_tr)
+
+
+```
+
+calculating AIC for all models
+Then, the model with the lowest AIC can be represented as the best model.
+```{r}
+#install.packages("broom")
+library (broom)
+glance (lm_model)
+glance (lm_model_tr)
+```
+
+
+
+
+#==============================================
+practice 1:
+
+1- learn about the embedded data set "airquality"
+
+2- create a linear regression model for the variables 
+Solar.R ~ Temp.
+Check the qqplot and the plot of residuals vs fitted.
+
+3-Are the assumptions of Normality, constant variance and linearity satisfied? (type it here)
+
+4- Interpret adjusted R2 value? (What it explains, type it here)
+
+5- plot the regression line and points (Add R2 and regression formula to the graph)
+
+6- predict the Solar.R value for a new Temp = 150
+
+7- Remove outliers and re-run the model, then check the assumptions in the new model.
+
+
+#Answer
+```{r}
+#1
+head(airquality)
+summary(airquality)
+str(airquality)
+
+#2
+lm_model_airq = lm(Solar.R ~ Temp, data= airquality)
+summary(lm_model_airq)
+plot(lm_model_airq)
+
+#3 There are some small deviations, but all in all it looks good enough.
+
+#4 R2_adj = 0.06967  seems to be very low. It means the variability in the Solar.R cannot explained well by the regression model
+
+#5
+# text on the graph
+a = round(unname(coef(lm_model_airq)[1]), digits = 2) #intercept
+b = round(unname(coef(lm_model_airq)[2]), digits = 2) #slope
+r2 = round(summary(lm_model_airq)$r.squared, digits = 3)
+#-----------
+#scatterplot 
+library("ggplot2")
+ggplot(data = airquality, aes(x = Temp, y = Solar.R)) +
+geom_point() +
+geom_smooth(method = "lm") +
+xlab("Maximum daily temperature") +
+ylab("Solar radiation") +
+ggtitle( paste("y =", a, "+ " ,b ,"x ,", "r^2=",r2))
+
+
+#6
+p <-data.frame(Temp = c(150))
+predict.lm(lm_model_airq,newdata = p)
+
+
+#7
+cooksd <- cooks.distance(lm_model_airq)
+#outliers
+sample_size = nrow(airquality)
+influential <- as.numeric(names(cooksd)[(cooksd > (4/sample_size))])
+airquality_rm_outliers <- airquality[-influential, ]
+
+
+
+#removing outliers and save the new data set in df_rm_outliers
+#visualizing outliers plot based on the Cook-distance and the 4/n criterion
+plot(cooksd, pch="*", cex=2, main="Influential obs by Cooks distance")  
+abline(h = 4/sample_size, col="red")  # add cutoff line
+text(x=1:length(cooksd), y=cooksd, labels=ifelse(cooksd> 4/sample_size, names(cooksd),""), col="red")  # add labels
+
+#rerunning the model and checking assumptions
+lm_model_airq_no_outlier = lm(Solar.R ~ Temp * Wind +Day  , data= airquality_rm_outliers)
+summary(lm_model_airq_no_outlier)
+plot(lm_model_airq_no_outlier)
+
+```
+
+
+#==============================================
+
+practice 2:
+
+1- learn about the data set "crime data.csv"
+
+
+2- 
+A)create a linear regression model for the variables crime_rate ~ college. Check the model summary, qqplot and residuals vs fitted values. Interpret the results
+B) Make a new model for crime_rate ~ college + funding
+ 
+
+3- Are the assumptions of Normality, constant variance and linearity? (type it here)
+
+4- Interpret adjusted R2 value
+
+5- plot the regression line and points (Add R2 and regression formula to the graph) crime_rate as the dependent variable and college as the independent variable
+
+6- predict the y value for a new x vector college = 100, funding= 50
+
+7- Remove outliers and re-run the linear regression model
+
+8- Check qqplot and add variables or apply transformations if needed
+
+9- Find AIC for all models you created
+
+
+```{r}
+#1
+df_crime = read.csv("/Users/zsajedin/Desktop/OneDrive/Winter 2023/OPS 804/Datasets/regression/crime_data.csv")
+head(df_crime)
+str(df_crime)
+summary(df_crime)
+
+
+#2A
+lm_model_crime = lm(crime_rate ~ college, data= df_crime)
+summary(lm_model_crime )
+plot(lm_model_crime )
+
+
+#2B
+lm_model_crime_2 = lm(crime_rate ~ college + funding , data= df_crime)
+summary(lm_model_crime_2 )
+plot(lm_model_crime_2 )
+
+#3 There are some deviations that needs to be fixed.
+
+#4 R2_adj is low. It means the variability in the crime_rate cannot explained well by this regression model. We need to change the model or it is very likely that there are important missing independent variables.
+
+#5
+# text on the graph
+a = round(unname(coef(lm_model_crime_2)[1]), digits = 2) #intercept
+b = round(unname(coef(lm_model_crime_2)[2]), digits = 2) #slope
+r2 = round(summary(lm_model_crime_2)$r.squared, digits = 3)
+#-----------
+#scatterplot 
+library("ggplot2")
+ggplot(data = df_crime, aes(x = crime_rate, y = college)) +
+geom_point() +
+geom_smooth(method = "lm") +
+xlab("x") +
+ylab("y") +
+ggtitle( paste("y =", a, "+ " ,b ,"x ,", "r^2=",r2))
+
+
+#6
+p <-data.frame(college = c(100),funding = c(50))
+predict.lm(lm_model_crime_2,newdata = p)
+
+
+#7
+cooksd <- cooks.distance(lm_model_crime_2 )
+#outliers
+sample_size = nrow(df_crime)
+influential <- as.numeric(names(cooksd)[(cooksd > (4/sample_size))])
+crime_rm_outliers <- df_crime[-influential, ] #removing outliers and save the new data set in df_rm_outliers
+#visualizing outliers plot based on the Cook-distance and the 4/n criterion
+plot(cooksd, pch="*", cex=2, main="Influential obs by Cooks distance")  
+abline(h = 4/sample_size, col="red")  # add cutoff line
+text(x=1:length(cooksd), y=cooksd, labels=ifelse(cooksd>4/sample_size, names(cooksd),""), col="red")  # add labels
+
+#rerunning the model and checking assumptions
+lm_model_crime_no_outlier = lm(crime_rate ~ college + funding, data= crime_rm_outliers)
+summary(lm_model_crime_no_outlier)
+plot(lm_model_crime_no_outlier)
+
+#rerunning the model and making adjustment for satisfying the assumptions
+
+lm_model_crime_no_outlier_add = lm(crime_rate ~ college + funding + misc, data= crime_rm_outliers)
+summary(lm_model_crime_no_outlier_add )
+plot(lm_model_crime_no_outlier_add )
+
+
+lm_model_crime_no_outlier_add_intr = lm(crime_rate ~  funding + misc + funding * misc  , data= crime_rm_outliers)
+summary(lm_model_crime_no_outlier_add_intr )
+plot(lm_model_crime_no_outlier_add_intr )
+
+
+lm_model_crime_no_outlier_add_intr_transform = lm(log(crime_rate) ~  funding + misc + funding * misc  , data= crime_rm_outliers)
+summary(lm_model_crime_no_outlier_add_intr_transform )
+plot(lm_model_crime_no_outlier_add_intr_transform )
+
+#9
+glance(lm_model_crime)
+glance(lm_model_crime_no_outlier_add)
+glance(lm_model_crime_no_outlier_add_intr)
+glance(lm_model_crime_no_outlier_add_intr_transform)
+
+
+```
+
+
+#==============================================
+
+practice 3:
+
+1- learn about the data set "car data.csv"
+
+2- create a linear regression model for the variables Selling_Price ~ Year + Kms_Driven + Fuel_Type. Check the qqplot and residuals vs fitted values. 
+
+3- Are the assumptions of Normality, constant variance and linearity satisfied? (type it here)
+
+4- Interpret adjusted R2 value
+
+5- plot the regression line and points for the Year variable (Add R2 and regression formula to the graph) 
+
+6- predict the y value for a new  vector of x : Year= 2020 , Kms_Driven= 1000 + Fuel_Type= "Petrol"
+
+7- Remove outliers and re-run the linear regression model
+
+8- Check qqplot and apply transformations if needed
+
+9- Find AIC for all models you created
+
+
+
+```{r}
+#1
+df_car = read.csv("/Users/zsajedin/Desktop/OneDrive/Winter 2023/OPS 804/Datasets/regression/car data.csv")
+head(df_car)
+str(df_car)
+summary(df_car)
+
+
+#2
+lm_model_car = lm(Selling_Price ~ Year + Kms_Driven + Fuel_Type, data= df_car)
+summary(lm_model_car )
+plot(lm_model_car )
+
+
+
+
+#3 There are some deviations that needs to be fixed.
+
+#4 R2_adj is low. It means the variability in the selling price cannot explained well by this regression model.
+
+
+#5
+# text on the graph
+a = round(unname(coef(lm_model_car)[1]), digits = 2) #intercept
+b = round(unname(coef(lm_model_car)[2]), digits = 2) #slope
+r2 = round(summary(lm_model_car)$r.squared, digits = 3)
+#-----------
+#scatterplot 
+library("ggplot2")
+ggplot(data = df_car, aes(x = Year, y = Selling_Price)) +
+geom_point() +
+geom_smooth(method = "lm") +
+xlab("x") +
+ylab("y") +
+ggtitle( paste("y =", a, "+ " ,b ,"x ,", "r^2=",r2))
+
+
+#6
+p <-data.frame(Year= c(2020) , Kms_Driven= c(1000) , Fuel_Type=c("Petrol"))
+predict.lm(lm_model_car,newdata = p)
+
+
+#7
+cooksd <- cooks.distance(lm_model_car )
+#outliers
+sample_size = nrow(df_car)
+influential <- as.numeric(names(cooksd)[(cooksd > (4/sample_size))])
+car_rm_outliers <- df_car[-influential, ] #removing outliers and save the new data set in df_rm_outliers
+#visualizing outliers plot based on the Cook-distance and the 4/n criterion
+plot(cooksd, pch="*", cex=2, main="Influential obs by Cooks distance")  
+abline(h = 4/sample_size, col="red")  # add cutoff line
+text(x=1:length(cooksd), y=cooksd, labels=ifelse(cooksd>4/sample_size, names(cooksd),""), col="red")  # add labels
+
+#rerunning the model and checking assumptions
+lm_model_car_no_outlier = lm(Selling_Price ~ Year + Kms_Driven + Fuel_Type, data= car_rm_outliers)
+summary(lm_model_car_no_outlier)
+plot(lm_model_car_no_outlier)
+
+#rerunning the model and making adjustment for satisfying the assumptions
+
+
+lm_model_car_no_outlier_transform = lm(log(Selling_Price) ~ Year + Kms_Driven +  Fuel_Type, data= car_rm_outliers)
+summary(lm_model_car_no_outlier_transform)
+plot(lm_model_car_no_outlier_transform)
+
+
+
+#9
+glance(lm_model_car)
+glance(lm_model_car_no_outlier)
+glance(lm_model_car_no_outlier_transform)
+
+
+```
+
+
+#==============================================
