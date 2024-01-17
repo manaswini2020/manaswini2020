@@ -2,9 +2,9 @@
 - 👀 I’m interested in data analyst/ data scientist roles.
 - 🌱 I’m currently learning AWS .
 - 💞️ I’m looking to collaborate on data analysis projects.
-- 📫 How to reach me .
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
+- 📫 My linked_in :www.linkedin.com/in/manaswinimishra
+- 😄 Pronouns:Manaswini Mishra
+- ⚡ Fun fact:Honey never spoils LOL .
 
 <!---
 manaswini2020/manaswini2020 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
