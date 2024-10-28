@@ -1,3 +1,18 @@
+
+This project demonstrates a step-by-step approach to linear regression analysis in R, focusing on assumptions, outlier management, and model improvement through additional predictors, transformations, and polynomial terms. Your code handles two datasets, Real_estate.csv and crime_data.csv, and explores techniques like Cook's Distance for outlier detection, variable transformations for normality, and model selection using AIC.
+
+Here are a few key suggestions to enhance your analysis:
+
+Interpretation: For each model, add brief interpretations of the coefficients and R² values. This will give insight into how much each predictor impacts the dependent variable and how well the model explains the variability.
+
+Visualization: Adding titles and customizing axis labels in the plots can make the visualizations more intuitive, especially in the ggplot2 sections.
+
+Transformation Justification: You may want to explain why certain transformations (like square or log) are applied to the variables, particularly if they address any skew or non-normality in residuals.
+
+Code Structure: Organize code sections with comments for easy readability, especially in the "Practice" sections. Label each transformation or model variation with its purpose (e.g., "Polynomial model for non-linear relationship").
+
+Interpretation of Practice Results: Include your conclusions about model assumptions (linearity, homoscedasticity, normality) and provide a brief summary of whether each model meets these.
+
 ---
 title: "lm"
 author: "Manaswini Mishra"
